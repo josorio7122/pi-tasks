@@ -1,0 +1,49 @@
+{
+  "name": "pi-tasks",
+  "version": "0.1.0",
+  "description": "Session-scoped task tracking for pi — Claude Code TodoWrite semantics as a reusable pi-package",
+  "keywords": [
+    "pi-package",
+    "tasks",
+    "todowrite"
+  ],
+  "license": "MIT",
+  "author": "josorio7122",
+  "repository": "github:josorio7122/pi-tasks",
+  "type": "module",
+  "exports": {
+    ".": "./src/api.ts"
+  },
+  "scripts": {
+    "test": "vitest run --exclude \"src/**/*-e2e.test.ts\"",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --fix src/",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "simulate": "tsx scripts/simulate-ui.ts",
+    "test:e2e": "vitest run src/tool-e2e.test.ts src/render/widget-e2e.test.ts src/render/result-e2e.test.ts"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "@sinclair/typebox": "*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
+    "@mariozechner/pi-coding-agent": "^0.65.0",
+    "@mariozechner/pi-tui": "^0.65.0",
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
