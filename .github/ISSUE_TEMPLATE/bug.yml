@@ -1,0 +1,77 @@
+name: Bug report
+description: Report something that's broken.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! Please fill out the sections below so we can reproduce the issue.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I call the task tool with action=add, the widget doesn't update…
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal sequence of tool calls or commands that triggers the bug.
+      placeholder: |
+        1. Install pi-tasks: `pi install git:github.com/josorio7122/pi-tasks`
+        2. Start pi session
+        3. Call `task add content="Build X"`
+        4. Observe…
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The widget should display the new task below the editor.
+    validations:
+      required: true
+
+  - type: input
+    id: pi-tasks-version
+    attributes:
+      label: pi-tasks version
+      description: Output of `npm ls pi-tasks` or the tag you installed.
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: pi-version
+    attributes:
+      label: pi version
+      description: Output of `pi --version`.
+      placeholder: 0.65.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, terminal, Node version.
+      placeholder: |
+        - OS: macOS 14.5
+        - Terminal: Warp v0.2026…
+        - Node: v20.10.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Any relevant stack traces, pi debug output, or captured tool-call JSON.
+      render: shell
+    validations:
+      required: false
