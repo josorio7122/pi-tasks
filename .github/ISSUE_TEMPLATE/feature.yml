@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest an enhancement to pi-tasks.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please check the [Contributing guide](../../CONTRIBUTING.md#what-belongs-in-pi-tasks) first — some proposals belong in a separate pi-package rather than in pi-tasks.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user pain does this solve? Why is the current behavior insufficient?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Concrete shape — API, widget change, tool-action addition, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about and why you rejected them.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope confirmation
+      description: Please confirm this proposal belongs in pi-tasks, not a separate pi-package.
+      options:
+        - label: "This affects core task-tracking semantics, widget, or result rendering (in scope)."
+        - label: "This adds pi-core / pi-tui functionality (upstream to [pi-mono](https://github.com/badlogic/pi-mono))."
+        - label: "This integrates with an external service (Linear, Jira, etc.) — should be a separate pi-package."
+    validations:
+      required: true
