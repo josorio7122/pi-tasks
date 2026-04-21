@@ -14,12 +14,17 @@ npm run simulate       # visual QA of widget + tool output
 
 ## Running end-to-end tests
 
-E2E tests exercise the real pi runtime. They're gated on the `PI_BIN` environment variable, so `npm run check` skips them by default.
+E2E tests spawn the real `pi` CLI and assert on its output. They live in `*-e2e.test.ts` files, are excluded from the default `npm run check`, and use a dedicated `vitest.e2e.config.ts`.
 
 ```bash
 export PI_BIN=/path/to/pi   # or /usr/local/bin/pi if installed globally
-npm run test:e2e
+npm run test:e2e            # sets PI_E2E=1 and runs the e2e config
 ```
+
+Two env vars are involved:
+
+- **`PI_E2E=1`** — the intent flag that opts you into e2e runs. Set automatically by `npm run test:e2e`.
+- **`PI_BIN`** — the path to the compiled `pi` binary. Without it, the e2e suite self-skips cleanly.
 
 ## Code style
 

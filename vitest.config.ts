@@ -1,7 +1,9 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	test: {
-		include: ["src/**/*.test.ts"],
-	},
+  test: {
+    include: ["src/**/*.test.ts"],
+    exclude: ["src/**/*-e2e.test.ts", "node_modules/**"],
+    passWithNoTests: true,
+  },
 });

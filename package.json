@@ -15,14 +15,15 @@
     ".": "./src/api.ts"
   },
   "scripts": {
-    "test": "vitest run --exclude \"src/**/*-e2e.test.ts\"",
+    "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
     "lint:fix": "biome check --fix src/",
     "check": "npm run lint && npm run lint:blanks && npm run typecheck && npm run test",
+    "format": "biome format --write src/",
     "simulate": "tsx scripts/simulate-ui.ts",
-    "test:e2e": "vitest run src/tool-e2e.test.ts src/render/widget-e2e.test.ts src/render/result-e2e.test.ts",
+    "test:e2e": "PI_E2E=1 vitest run --config vitest.e2e.config.ts",
     "prepare": "simple-git-hooks",
     "lint:blanks": "bash scripts/check-blank-lines.sh"
   },
@@ -35,6 +36,7 @@
     "@biomejs/biome": "^2.4.10",
     "@mariozechner/pi-coding-agent": "*",
     "@mariozechner/pi-tui": "*",
+    "@sinclair/typebox": "*",
     "@types/node": "^25.5.0",
     "lint-staged": "^16.4.0",
     "simple-git-hooks": "^2.13.1",
