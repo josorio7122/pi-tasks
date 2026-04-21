@@ -1,5 +1,9 @@
 # pi-tasks
 
+[![CI](https://github.com/josorio7122/pi-tasks/actions/workflows/check.yml/badge.svg)](https://github.com/josorio7122/pi-tasks/actions/workflows/check.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![pi-package](https://img.shields.io/badge/pi--package-v0.1.0-36f9f6)](https://github.com/josorio7122/pi-tasks/releases/tag/v0.1.0)
+
 > Session-scoped task tracking for [pi](https://github.com/badlogic/pi-mono) — Claude Code TodoWrite semantics exposed as a reusable pi-package.
 
 `pi-tasks` ships two things:
