@@ -1,10 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTask, updateTask } from "../storage/index.js";
-import { mockTheme } from "../test/mock-theme.js";
+import { makeMockContext } from "../test/mock-context.js";
 import { buildTaskUpdateTool } from "./update.js";
 
 let root: string;
@@ -17,13 +16,6 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function ctx(): ExtensionContext {
-  return {
-    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendCustomEntry: vi.fn() } as never,
-    ui: { theme: mockTheme(), setWidget: vi.fn() },
-  } as unknown as ExtensionContext;
-}
-
 describe("task_update tool", () => {
   it("returns 'Updated task #<id> <fields>' on success", async () => {
     const tool = buildTaskUpdateTool({ tasksRoot: root, inheritedTaskListId: false });
@@ -33,7 +25,7 @@ describe("task_update tool", () => {
       { taskId: id, status: "in_progress" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     const text = r.content[0]?.type === "text" ? r.content[0].text : "";
     expect(text).toBe(`Updated task #${id} status`);
@@ -46,7 +38,7 @@ describe("task_update tool", () => {
       { taskId: "999", status: "in_progress" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     expect(r.content[0]?.type === "text" ? r.content[0].text : "").toBe("Task not found");
   });
@@ -59,7 +51,7 @@ describe("task_update tool", () => {
       { taskId: id, status: "deleted" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     expect(r.content[0]?.type === "text" ? r.content[0].text : "").toBe(`Updated task #${id} deleted`);
   });
@@ -77,7 +69,7 @@ describe("task_update tool", () => {
       { taskId: c, status: "completed" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     const text = r.content[0]?.type === "text" ? r.content[0].text : "";
     expect(text).toContain(`Updated task #${c} status`);
@@ -98,7 +90,7 @@ describe("task_update tool", () => {
       { taskId: c, status: "completed" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     const text = r.content[0]?.type === "text" ? r.content[0].text : "";
     expect(text).not.toContain("NOTE:");
@@ -117,7 +109,7 @@ describe("task_update tool", () => {
       { taskId: c, status: "completed" },
       new AbortController().signal,
       undefined,
-      ctx(),
+      makeMockContext(),
     );
     const text = r.content[0]?.type === "text" ? r.content[0].text : "";
     expect(text).not.toContain("NOTE:");

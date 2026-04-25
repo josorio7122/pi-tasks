@@ -6,12 +6,7 @@ import { getTask } from "./get-task.js";
 /** List all tasks, ascending by numeric id. Skips files that fail schema validation. */
 export async function listTasks(taskListId: string, root?: string): Promise<Task[]> {
   const dir = getTasksDir(taskListId, root);
-  let files: string[];
-  try {
-    files = await readdir(dir);
-  } catch {
-    return [];
-  }
+  const files = await readdir(dir).catch((): string[] => []);
   const ids = files
     .filter((f) => f.endsWith(".json") && !f.startsWith("."))
     .map((f) => f.replace(".json", ""))

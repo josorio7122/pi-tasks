@@ -68,7 +68,5 @@ export const TaskUpdateParams = Type.Object(
 export type TaskUpdateInput = Static<typeof TaskUpdateParams>;
 
 export const TaskListParams = Type.Object({}, { additionalProperties: false });
-export type TaskListInput = Static<typeof TaskListParams>;
 
 export const TaskGetParams = Type.Object({ taskId: Type.String({ minLength: 1 }) }, { additionalProperties: false });
-export type TaskGetInput = Static<typeof TaskGetParams>;

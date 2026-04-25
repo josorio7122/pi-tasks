@@ -5,7 +5,7 @@ export const PI_TASK_LIST_ID_ENV = "PI_TASK_LIST_ID";
 /**
  * Resolve the active task list id.
  *
- * Mirrors V2 resolution chain at ~/Code/claude-code/src/utils/tasks.ts:199-210, with
+ * Mirrors V2 resolution chain at V2 tasks.ts:199-210, with
  * swarm slots (in-process teammate context, PI_TEAM_NAME, leader team name) reserved
  * for future pi-agents support.
  *

@@ -1,26 +1,19 @@
 import { type AgentToolResult, defineTool, type ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Value } from "@sinclair/typebox/value";
-import { renderTasksWidget } from "../render/widget.js";
 import { type Task, TaskGetParams } from "../schema.js";
-import { getTask, getTaskListId, listTasks } from "../storage/index.js";
+import { getTask, getTaskListId } from "../storage/index.js";
 import { GET_DESCRIPTION, GET_PROMPT } from "./prompts/get.js";
+import { refreshWidget, resolveToolDefaults, type ToolCommonConfig } from "./shared.js";
 
-export type BuildTaskGetToolConfig = {
-  name?: string;
-  label?: string;
-  brand?: string;
-  headerPrefix?: string;
-  tasksRoot?: string;
-};
+export type BuildTaskGetToolConfig = ToolCommonConfig;
 
 export type GetTaskDetails = { task: Task | null };
 
 export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
-  const name = config.name ?? "task_get";
-  const label = config.label ?? "Task Get";
-  const brand = config.brand ?? "●";
-  const headerPrefix = config.headerPrefix ?? "Tasks";
-  const root = config.tasksRoot;
+  const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {
+    name: "task_get",
+    label: "Task Get",
+  });
 
   return defineTool({
     name,
@@ -46,19 +39,16 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const task = await getTask(taskListId, input.taskId, root);
 
-      const tasks = await listTasks(taskListId, root);
-      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
+      // Read-only operation, but refresh anyway so the widget stays in sync with disk
+      // if the user manually edited a task file between reads. V2 doesn't do this; we keep
+      // it for consistency with task_list, which also refreshes on a read.
+      await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
 
       if (!task) {
         return { content: [{ type: "text", text: "Task not found" }], details: { task: null } };
       }
 
-      const text = [
-        `Task #${task.id}: ${task.subject}`,
-        `Status: ${task.status}`,
-        `Description: ${task.description}`,
-      ].join("\n");
+      const text = `Task #${task.id}: ${task.subject}\nStatus: ${task.status}\nDescription: ${task.description}`;
 
       return { content: [{ type: "text", text }], details: { task } };
     },

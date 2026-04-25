@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { getTasksDir, lockFilePath } from "../common/paths.js";
 
 /**
- * Verbatim port of V2 LOCK_OPTIONS (~/Code/claude-code/src/utils/tasks.ts:102-108).
+ * Verbatim port of V2 LOCK_OPTIONS (V2 tasks.ts:102-108).
  *
  * Budget sized for ~10+ concurrent agents: each critical section does
  * readdir + N×readFile + writeFile (~50-100ms on slow disks), so the last

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Task, TaskStatus } from "../schema.js";
-import { makeMockTheme } from "../test/mock-theme.js";
-import { BRANCH, BULLET, branch, bullet, checkbox, indent, styleTaskContent } from "./tree.js";
+import { mockTheme } from "../test/mock-theme.js";
+import { checkbox, styleTaskContent } from "./tree.js";
 
-const theme = makeMockTheme();
+const theme = mockTheme();
 
 describe("checkbox", () => {
   it.each([
@@ -28,22 +28,6 @@ describe("checkbox", () => {
     } as typeof theme;
     checkbox(status as TaskStatus, colored);
     expect(calls).toEqual([slot]);
-  });
-});
-
-describe("bullet / branch / indent glyphs", () => {
-  it("BULLET is ●", () => expect(BULLET).toBe("●"));
-  it("BRANCH is ⎿", () => expect(BRANCH).toBe("⎿"));
-  it("bullet composes label with ●", () => {
-    expect(bullet({ label: "x", theme })).toBe("● x");
-  });
-
-  it("branch composes text with default 2-space indent + ⎿", () => {
-    expect(branch({ text: "x", theme })).toBe("  ⎿  x");
-  });
-
-  it("indent pads each line", () => {
-    expect(indent("a\nb", 3)).toBe("   a\n   b");
   });
 });
 

@@ -3,15 +3,13 @@ import type { Task } from "./schema.js";
 export type NudgeConfig = boolean | string | undefined;
 
 export function DEFAULT_VERIFICATION_NUDGE(verifierAgentName: string): string {
-  return [
-    "NOTE: You just closed out 3+ tasks and none of them was a verification step.",
-    "Before writing your final summary, spawn the verifier subagent:",
-    "",
-    `  subagent(agent: "${verifierAgentName}", task: "Verify the closed task list above.")`,
-    "",
-    "You cannot self-assign success by listing caveats in your summary —",
-    "verification is what produces a verdict.",
-  ].join("\n");
+  return `NOTE: You just closed out 3+ tasks and none of them was a verification step.
+Before writing your final summary, spawn the verifier subagent:
+
+  subagent(agent: "${verifierAgentName}", task: "Verify the closed task list above.")
+
+You cannot self-assign success by listing caveats in your summary —
+verification is what produces a verdict.`;
 }
 
 /** Returns null when nudge is disabled, otherwise the resolved text. */
@@ -30,7 +28,7 @@ export function resolveNudge(config: NudgeConfig, verifierAgentName: string): st
  *  - no subject matches /verif/i
  *  - not running in a subagent (inherited === false)
  */
-export function shouldEmitNudge(opts: { allTasks: Task[]; inherited: boolean }): boolean {
+export function shouldEmitNudge(opts: { allTasks: readonly Task[]; inherited: boolean }): boolean {
   const { allTasks, inherited } = opts;
   if (inherited) return false;
   if (allTasks.length < 3) return false;

@@ -19,20 +19,12 @@ export async function writeHighWaterMark(taskListId: string, value: number, root
 }
 
 async function findHighestTaskIdFromFiles(taskListId: string, root?: string): Promise<number> {
-  const dir = getTasksDir(taskListId, root);
-  let files: string[];
-  try {
-    files = await readdir(dir);
-  } catch {
-    return 0;
-  }
-  let highest = 0;
-  for (const file of files) {
-    if (!file.endsWith(".json")) continue;
-    const id = Number.parseInt(file.replace(".json", ""), 10);
-    if (!Number.isNaN(id) && id > highest) highest = id;
-  }
-  return highest;
+  const files = await readdir(getTasksDir(taskListId, root)).catch(() => [] as string[]);
+  const ids = files
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => Number.parseInt(f.replace(".json", ""), 10))
+    .filter((n) => !Number.isNaN(n));
+  return ids.length === 0 ? 0 : Math.max(...ids);
 }
 
 /** max(filesScan, hwm). Prevents id reuse after deletion. V2 verbatim (tasks.ts:271-277). */
