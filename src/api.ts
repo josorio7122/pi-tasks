@@ -37,19 +37,24 @@ function namesFromConfig(config: CreateTasksToolsConfig) {
 export function createTasksTools(config: CreateTasksToolsConfig = {}) {
   const names = namesFromConfig(config);
   const inherited = isInheritedTaskListId({ envSnapshot: ENV_SNAPSHOT_AT_LOAD });
-  const common = {
-    brand: config.brand,
-    headerPrefix: config.headerPrefix,
-    tasksRoot: config.tasksRoot,
-  };
+  // Only include keys we actually have values for — avoids tripping
+  // exactOptionalPropertyTypes by passing `undefined` to optional string fields.
+  const common: { brand?: string; headerPrefix?: string; tasksRoot?: string } = {};
+  if (config.brand !== undefined) common.brand = config.brand;
+  if (config.headerPrefix !== undefined) common.headerPrefix = config.headerPrefix;
+  if (config.tasksRoot !== undefined) common.tasksRoot = config.tasksRoot;
+
+  const updateExtras: { verificationNudge?: NudgeConfig; verifierAgentName?: string } = {};
+  if (config.verificationNudge !== undefined) updateExtras.verificationNudge = config.verificationNudge;
+  if (config.verifierAgentName !== undefined) updateExtras.verifierAgentName = config.verifierAgentName;
+
   return {
     create: buildTaskCreateTool({ ...common, ...names.create }),
     update: buildTaskUpdateTool({
       ...common,
       ...names.update,
       inheritedTaskListId: inherited,
-      verificationNudge: config.verificationNudge,
-      verifierAgentName: config.verifierAgentName,
+      ...updateExtras,
     }),
     list: buildTaskListTool({ ...common, ...names.list }),
     get: buildTaskGetTool({ ...common, ...names.get }),

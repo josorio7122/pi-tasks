@@ -60,7 +60,6 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
           content: [{ type: "text", text }],
           // biome-ignore lint/suspicious/noExplicitAny: details typed for the happy path
           details: { taskId: "", subject: "" } as any,
-          isError: true,
         };
       }
 

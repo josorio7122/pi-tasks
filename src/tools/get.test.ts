@@ -11,6 +11,7 @@ let root: string;
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "pi-tasks-tool-get-"));
 });
+
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });

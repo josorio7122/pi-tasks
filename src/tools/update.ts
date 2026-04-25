@@ -49,7 +49,6 @@ export function buildTaskUpdateTool(config: BuildTaskUpdateToolConfig = {}) {
           content: [{ type: "text", text: "task_update: invalid input" }],
           // biome-ignore lint/suspicious/noExplicitAny: details typed for happy path
           details: { success: false, taskId: "", updatedFields: [] } as any,
-          isError: true,
         };
       }
 

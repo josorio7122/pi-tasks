@@ -40,7 +40,6 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
         return {
           content: [{ type: "text", text: "task_get: invalid input" }],
           details: { task: null },
-          isError: true,
         };
       }
 

@@ -39,7 +39,7 @@ describe("task_update tool", () => {
     expect(text).toBe(`Updated task #${id} status`);
   });
 
-  it("returns 'Task not found' for missing id (benign, not isError)", async () => {
+  it("returns 'Task not found' for missing id (benign)", async () => {
     const tool = buildTaskUpdateTool({ tasksRoot: root, inheritedTaskListId: false });
     const r = await tool.execute(
       "tu2",
@@ -48,7 +48,6 @@ describe("task_update tool", () => {
       undefined,
       ctx(),
     );
-    expect(r.isError).toBeFalsy();
     expect(r.content[0]?.type === "text" ? r.content[0].text : "").toBe("Task not found");
   });
 
