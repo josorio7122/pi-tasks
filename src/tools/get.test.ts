@@ -1,0 +1,39 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createTask } from "../storage/index.js";
+import { mockTheme } from "../test/mock-theme.js";
+import { buildTaskGetTool } from "./get.js";
+
+let root: string;
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), "pi-tasks-tool-get-"));
+});
+afterEach(() => {
+  rmSync(root, { recursive: true, force: true });
+});
+
+function ctx(): ExtensionContext {
+  return {
+    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendEntry: vi.fn() } as never,
+    ui: { theme: mockTheme(), setWidget: vi.fn() },
+  } as unknown as ExtensionContext;
+}
+
+describe("task_get tool", () => {
+  it("returns 'Task not found' on missing", async () => {
+    const tool = buildTaskGetTool({ tasksRoot: root });
+    const r = await tool.execute("tg1", { taskId: "999" }, new AbortController().signal, undefined, ctx());
+    expect(r.content[0]?.type === "text" ? r.content[0].text : "").toBe("Task not found");
+  });
+
+  it("returns multi-line subject/status/description", async () => {
+    const tool = buildTaskGetTool({ tasksRoot: root });
+    const id = await createTask("sess", { subject: "Build login", description: "wire it" }, root);
+    const r = await tool.execute("tg2", { taskId: id }, new AbortController().signal, undefined, ctx());
+    const text = r.content[0]?.type === "text" ? r.content[0].text : "";
+    expect(text).toBe(`Task #${id}: Build login\nStatus: pending\nDescription: wire it`);
+  });
+});
