@@ -1,6 +1,6 @@
 {
   "name": "pi-tasks",
-  "version": "0.1.0",
+  "version": "0.2.0-dev",
   "description": "A task tool for pi agents — session-scoped tasks with a live above-editor widget and compact tool output",
   "keywords": [
     "pi-package",
@@ -38,6 +38,7 @@
     "@mariozechner/pi-tui": "*",
     "@sinclair/typebox": "*",
     "@types/node": "^25.5.0",
+    "@types/proper-lockfile": "^4.1.4",
     "lint-staged": "^16.4.0",
     "simple-git-hooks": "^2.13.1",
     "tsx": "^4.21.0",
@@ -54,6 +55,7 @@
   },
   "files": [
     "src",
+    "agents",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
@@ -65,5 +67,8 @@
     "src/**/*.ts": [
       "biome check --fix --no-errors-on-unmatched"
     ]
+  },
+  "dependencies": {
+    "proper-lockfile": "^4.1.2"
   }
 }
