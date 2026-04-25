@@ -45,11 +45,7 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
         return { content: [{ type: "text", text: "Task not found" }], details: { task: null } };
       }
 
-      const text = [
-        `Task #${task.id}: ${task.subject}`,
-        `Status: ${task.status}`,
-        `Description: ${task.description}`,
-      ].join("\n");
+      const text = `Task #${task.id}: ${task.subject}\nStatus: ${task.status}\nDescription: ${task.description}`;
 
       return { content: [{ type: "text", text }], details: { task } };
     },
