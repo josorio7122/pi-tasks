@@ -13,7 +13,21 @@ export type UpdateTaskResult = {
   statusChange?: { from: TaskUpdateStatus; to: TaskUpdateStatus };
 };
 
-const FIELDS_THAT_CAN_DIFFER = ["subject", "description", "activeForm"] as const;
+const DIFFABLE_FIELDS = ["subject", "description", "activeForm"] as const;
+
+type DiffableField = (typeof DIFFABLE_FIELDS)[number];
+
+/** Pure: which diffable fields actually changed value? */
+function changedFields(input: Omit<TaskUpdateInput, "taskId">, existing: Task): readonly DiffableField[] {
+  return DIFFABLE_FIELDS.filter((k) => input[k] !== undefined && input[k] !== existing[k]);
+}
+
+/** Pure: drop startedAt when the merged task is no longer in_progress. */
+function withoutStaleStartedAt(task: Task): Task {
+  if (task.status === "in_progress" || task.startedAt === undefined) return task;
+  const { startedAt: _stripped, ...rest } = task;
+  return rest;
+}
 
 /** Update a task. Mirrors V2 TaskUpdateTool semantics (TaskUpdateTool.ts:123-274). */
 // biome-ignore lint/complexity/useMaxParams: fourth param is optional storage root override
@@ -31,13 +45,10 @@ export async function updateTask(
       return { success: false, taskId, updatedFields: [], error: "Task not found" };
     }
 
-    // Deletion path
     if (input.status === "deleted") {
-      try {
-        await unlink(getTaskPath(taskListId, taskId, root));
-      } catch {
+      await unlink(getTaskPath(taskListId, taskId, root)).catch(() => {
         // already gone — treat as success
-      }
+      });
       return {
         success: true,
         taskId,
@@ -46,47 +57,27 @@ export async function updateTask(
       };
     }
 
-    const updates: Partial<Task> = {};
-    const updatedFields: string[] = [];
-
-    for (const k of FIELDS_THAT_CAN_DIFFER) {
-      const next = input[k];
-      if (next !== undefined && next !== existing[k]) {
-        updates[k] = next;
-        updatedFields.push(k);
-      }
-    }
-
-    let statusChange: UpdateTaskResult["statusChange"];
-    if (input.status !== undefined && input.status !== existing.status) {
-      updates.status = input.status;
-      updatedFields.push("status");
-      statusChange = { from: existing.status, to: input.status };
-
-      if (input.status === "in_progress") {
-        updates.startedAt = Date.now();
-      }
-    }
+    const fieldChanges = changedFields(input, existing);
+    const nextStatus = input.status !== undefined && input.status !== existing.status ? input.status : undefined;
+    const updatedFields = nextStatus !== undefined ? [...fieldChanges, "status"] : [...fieldChanges];
 
     if (updatedFields.length === 0) {
       return { success: true, taskId, updatedFields: [] };
     }
 
-    const merged: Task = {
-      ...existing,
-      ...updates,
-    };
-    if (merged.status !== "in_progress" && merged.startedAt !== undefined) {
-      delete merged.startedAt;
-    }
-
+    const fieldUpdates = Object.fromEntries(fieldChanges.map((k) => [k, input[k]])) as Partial<Task>;
+    const statusUpdates: Partial<Task> =
+      nextStatus !== undefined
+        ? { status: nextStatus, ...(nextStatus === "in_progress" ? { startedAt: Date.now() } : {}) }
+        : {};
+    const merged = withoutStaleStartedAt({ ...existing, ...fieldUpdates, ...statusUpdates });
     await writeFile(getTaskPath(taskListId, taskId, root), `${JSON.stringify(merged, null, 2)}\n`);
 
     return {
       success: true,
       taskId,
       updatedFields,
-      ...(statusChange ? { statusChange } : {}),
+      ...(nextStatus !== undefined ? { statusChange: { from: existing.status, to: nextStatus } } : {}),
     };
   } finally {
     await release();
