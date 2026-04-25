@@ -56,7 +56,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/api.ts"],
+      "includes": ["src/api.ts", "src/storage/index.ts"],
       "linter": {
         "rules": {
           "performance": {
