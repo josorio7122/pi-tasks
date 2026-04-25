@@ -1,6 +1,6 @@
 {
   "name": "pi-tasks",
-  "version": "0.2.0-dev",
+  "version": "0.2.0",
   "description": "A task tool for pi agents — session-scoped tasks with a live above-editor widget and compact tool output",
   "keywords": [
     "pi-package",

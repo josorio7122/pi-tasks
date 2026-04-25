@@ -2,16 +2,16 @@
 
 [![CI](https://github.com/josorio7122/pi-tasks/actions/workflows/check.yml/badge.svg)](https://github.com/josorio7122/pi-tasks/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![pi-package](https://img.shields.io/badge/pi--package-v0.1.0-36f9f6)](https://github.com/josorio7122/pi-tasks/releases/tag/v0.1.0)
+[![pi-package](https://img.shields.io/badge/pi--package-v0.2.0-36f9f6)](https://github.com/josorio7122/pi-tasks/releases/tag/v0.2.0)
 
-> A `task` tool for [pi](https://github.com/badlogic/pi-mono) agents — session-scoped tasks with a live above-editor widget and compact tool output.
+> Four task tools for [pi](https://github.com/badlogic/pi-mono) agents — disk-backed, session-scoped tasks with a live above-editor widget, mirroring Claude Code's V2 task system.
 
 `pi-tasks` ships two things:
 
-1. A **pi extension** that registers the `task` tool (installable via `pi install` or auto-discovery).
-2. A **library** (`createTasksTool`) for pi packages that want to register the tool themselves with custom branding / naming / description.
+1. A **pi extension** that registers four tools — `task_create`, `task_update`, `task_list`, `task_get` (installable via `pi install` or auto-discovery).
+2. A **library** (`registerTasksTools` / `createTasksTools`) for pi packages that want to register the tools themselves with custom branding / naming / description.
 
-The widget above the editor shows live task state; the tool output is a single compact `Task(<subject>: <transition>)` line per call.
+The widget above the editor shows live task state; tool output is V2-style plain text (e.g. `Task #1 created successfully: Build login flow`).
 
 ## Install as a pi-package
 
@@ -20,7 +20,7 @@ The widget above the editor shows live task state; the tool output is a single c
 pi install git:github.com/josorio7122/pi-tasks
 
 # or a specific tag
-pi install git:github.com/josorio7122/pi-tasks@v0.1.0
+pi install git:github.com/josorio7122/pi-tasks@v0.2.0
 
 # quick test without writing to settings
 pi -e git:github.com/josorio7122/pi-tasks
@@ -30,28 +30,33 @@ git clone git@github.com:josorio7122/pi-tasks.git ~/.pi/agent/extensions/pi-task
 cd ~/.pi/agent/extensions/pi-tasks && npm install
 ```
 
-Once installed, pi's `task` tool is available to any session. Defaults:
+Once installed, pi's four task tools are available to any session. Defaults:
 
-- `name: "task"` — identifier the LLM calls
-- `label: "Tasks"` — human-readable label pi uses in menus
+- Tool names: `task_create`, `task_update`, `task_list`, `task_get`
+- Labels: `Task Create`, `Task Update`, `Task List`, `Task Get`
 - `brand: "●"` — glyph prefixed to the above-editor widget header
-- `description` — the tool description the LLM reads. Encodes the work-tracking discipline: mark tasks `in_progress` before working, only one `in_progress` at a time, `complete` immediately, don't batch. See `DEFAULT_DESCRIPTION` in `src/tool.ts` for the full text.
+- `description` — each tool's description encodes the work-tracking discipline (mark `in_progress` before working, only one `in_progress` at a time, complete immediately, don't batch). See `src/tools/*.ts` for the full text.
 
 ## Use as a library
 
-For consumers that want custom branding (e.g. pi-superpowers registers the tool with `🦸`):
+For consumers that want custom branding (e.g. pi-superpowers registers the tools with `🦸`):
 
 ```ts
-import { createTasksTool } from "pi-tasks";
+import { registerTasksTools } from "pi-tasks";
 
-pi.registerTool(createTasksTool({
-  brand: "🦸",             // widget prefix
-  name: "my_task",         // tool name the LLM sees
-  headerPrefix: "Plan",    // widget header label when idle (default: "Tasks")
-}));
+// Default — registers task_create, task_update, task_list, task_get
+registerTasksTools(pi);
+
+// Custom branding (e.g., pi-superpowers)
+registerTasksTools(pi, {
+  brand: "🦸",
+  namePrefix: "plan",   // → plan_create, plan_update, plan_list, plan_get
+  labelPrefix: "Plan",
+  verifierAgentName: "verifier",
+});
 ```
 
-Returns a pi `ToolDefinition` (via `defineTool`). The user's active pi `Theme` is consumed automatically — no theme config required from the host.
+The user's active pi `Theme` is consumed automatically — no theme config required from the host.
 
 ## Output
 
@@ -64,43 +69,30 @@ Returns a pi `ToolDefinition` (via `defineTool`). The user's active pi `Theme` i
    ◼  Write integration tests
 ```
 
-**Tool output** (per call):
+**Tool output** (V2-style plain text):
 
 ```
-Task(Wire up auth middleware: completed)
-Task(Update the README: added)
-Task(replaced: 3 tasks)
-Task(cleared)
-Task(no prior tasks in session: error)
+Task #1 created successfully: Build login flow
+Updated task #1 status
+#1 [in_progress] Build login flow
+Task not found
+No tasks found
 ```
-
-Transitions: `added` / `started` / `updated` / `completed` / `removed` / `replaced` / `cleared` / `listed` / `error`. Each verb picks a canonical pi theme color slot (success / accent / warning / muted / error).
 
 ## Public API
 
 ```ts
-// Tool factory
-createTasksTool(config?: CreateTasksToolConfig): ToolDefinition
+// Tool factories
+createTasksTools(config?: CreateTasksToolsConfig): { create, update, list, get }
+registerTasksTools(pi: ExtensionAPI, config?: CreateTasksToolsConfig): void
 
 // Renderers (for custom consumers)
 renderTasksWidget(props): string[]
-renderTasksResult(props): string[]
-renderTasksError(props): string[]
-renderTasksResultComponent(props): Container     // pi-tui Component
-renderTasksErrorComponent(props): Container
-renderTasksCallComponent(props): Container
 formatElapsed(ms): string                        // "12s", "1m 30s", …
 
 // Schema (typebox)
-TaskSchema, TaskStatusSchema, TaskActionSchema, TaskDetailsSchema, TaskToolParamsSchema
-types: Task, TaskAction, TaskDetails, TaskStatus
-
-// State (pure)
-applyAction(prior, action, now?): Task[]
-reconstructTasks(entries, toolName): Task[]
-
-// Tree primitives (for custom renderers)
-bullet, branch, checkbox, indent, BULLET, BRANCH, CROSS
+TaskSchema, TaskStatusSchema
+types: Task, TaskStatus
 ```
 
 ## Development
@@ -113,6 +105,17 @@ npm run test:e2e   # requires PI_BIN — exercises the real pi runtime
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions, [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+## Migrating from v0.1
+
+v0.2 mirrors Claude Code's V2 task system. See the [v0.2 spec/plan](docs/) for the full design. Breaking changes:
+
+- Single `task` tool replaced with 4 tools (`task_create`, `task_update`, `task_list`, `task_get`).
+- Action enum gone — use the appropriate tool.
+- `Task.content` renamed to `Task.subject`; `description` is required on creation.
+- Tool result text changed to V2 wording (`Task #<id> created successfully: ...`).
+- Public API: `createTasksTool` → `createTasksTools` / `registerTasksTools`.
+- Disk-backed storage at `~/.pi/agent/tasks/<sessionId>/`.
 
 ## License
 
