@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Task, TaskStatus } from "../schema.js";
-import { makeMockTheme } from "../test/mock-theme.js";
+import { mockTheme } from "../test/mock-theme.js";
 import { checkbox, styleTaskContent } from "./tree.js";
 
-const theme = makeMockTheme();
+const theme = mockTheme();
 
 describe("checkbox", () => {
   it.each([

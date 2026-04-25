@@ -7,12 +7,9 @@ import type { Theme } from "@mariozechner/pi-coding-agent";
  * fields; only the methods the renderers actually consume (`fg`,
  * `strikethrough`, `bold`) are implemented here.
  */
-export function makeMockTheme(): Theme {
+export function mockTheme(): Theme {
   const fg = (_color: unknown, text: string): string => text;
   const strikethrough = (text: string): string => text;
   const bold = (text: string): string => text;
   return { fg, strikethrough, bold } as unknown as Theme;
 }
-
-/** Alias used by newer tool tests. */
-export const mockTheme = makeMockTheme;

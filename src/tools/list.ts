@@ -6,7 +6,7 @@ import { refreshWidget, resolveToolDefaults, type ToolCommonConfig } from "./sha
 
 export type BuildTaskListToolConfig = ToolCommonConfig;
 
-export type ListTasksDetails = { tasks: Task[] };
+export type ListTasksDetails = { tasks: readonly Task[] };
 
 export function buildTaskListTool(config: BuildTaskListToolConfig = {}) {
   const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {

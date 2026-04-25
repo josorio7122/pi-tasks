@@ -1,10 +1,10 @@
 import { visibleWidth } from "@mariozechner/pi-tui";
 import { describe, expect, it } from "vitest";
 import type { Task } from "../schema.js";
-import { makeMockTheme } from "../test/mock-theme.js";
+import { mockTheme } from "../test/mock-theme.js";
 import { renderTasksWidget } from "./widget.js";
 
-const theme = makeMockTheme();
+const theme = mockTheme();
 
 function sample(): Task[] {
   return [

@@ -15,12 +15,10 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-const ctx = makeMockContext;
-
 describe("task_list tool", () => {
   it("returns 'No tasks found' on empty", async () => {
     const tool = buildTaskListTool({ tasksRoot: root });
-    const r = await tool.execute("tl1", {}, new AbortController().signal, undefined, ctx());
+    const r = await tool.execute("tl1", {}, new AbortController().signal, undefined, makeMockContext());
     expect(r.content[0]?.type === "text" ? r.content[0].text : "").toBe("No tasks found");
   });
 
@@ -30,7 +28,7 @@ describe("task_list tool", () => {
     const b = await createTask("sess", { subject: "beta", description: "b" }, root);
     await updateTask("sess", a, { status: "completed" }, root);
 
-    const r = await tool.execute("tl2", {}, new AbortController().signal, undefined, ctx());
+    const r = await tool.execute("tl2", {}, new AbortController().signal, undefined, makeMockContext());
     const text = r.content[0]?.type === "text" ? r.content[0].text : "";
     expect(text).toBe(`#${a} [completed] alpha\n#${b} [pending] beta`);
   });
