@@ -8,8 +8,8 @@ const theme = makeMockTheme();
 
 function sample(): Task[] {
   return [
-    { id: "1", content: "a", status: "completed" },
-    { id: "2", content: "b", status: "pending" },
+    { id: "1", subject: "a", description: "a", status: "completed" },
+    { id: "2", subject: "b", description: "b", status: "pending" },
   ];
 }
 
@@ -27,7 +27,14 @@ describe("renderTasksWidget", () => {
   it("renders activeForm + elapsed in header when one task is in_progress", () => {
     const now = 100_000;
     const items: Task[] = [
-      { id: "1", content: "Build", activeForm: "Building", status: "in_progress", startedAt: now - 42_000 },
+      {
+        id: "1",
+        subject: "Build",
+        description: "Build",
+        activeForm: "Building",
+        status: "in_progress",
+        startedAt: now - 42_000,
+      },
     ];
     const lines = renderTasksWidget({ items, theme, width: 80, now });
     expect(lines[0]).toContain("Building");
@@ -35,14 +42,14 @@ describe("renderTasksWidget", () => {
   });
 
   it("falls back to content when activeForm is missing", () => {
-    const items: Task[] = [{ id: "1", content: "Build", status: "in_progress" }];
+    const items: Task[] = [{ id: "1", subject: "Build", description: "Build", status: "in_progress" }];
     const lines = renderTasksWidget({ items, theme, width: 80, now: 100_000 });
     expect(lines[0]).toContain("Build…");
   });
 
   it("applies custom brand and headerPrefix via config", () => {
     const lines = renderTasksWidget({
-      items: [{ id: "1", content: "a", status: "pending" }],
+      items: [{ id: "1", subject: "a", description: "a", status: "pending" }],
       theme,
       width: 80,
       brand: "🧪",
@@ -55,9 +62,23 @@ describe("renderTasksWidget", () => {
   it("shows aggregate 'N running' header when multiple tasks are in_progress", () => {
     const now = 100_000;
     const items: Task[] = [
-      { id: "1", content: "A", activeForm: "Doing A", status: "in_progress", startedAt: now - 5_000 },
-      { id: "2", content: "B", activeForm: "Doing B", status: "in_progress", startedAt: now - 2_000 },
-      { id: "3", content: "C", status: "pending" },
+      {
+        id: "1",
+        subject: "A",
+        description: "A",
+        activeForm: "Doing A",
+        status: "in_progress",
+        startedAt: now - 5_000,
+      },
+      {
+        id: "2",
+        subject: "B",
+        description: "B",
+        activeForm: "Doing B",
+        status: "in_progress",
+        startedAt: now - 2_000,
+      },
+      { id: "3", subject: "C", description: "C", status: "pending" },
     ];
     const lines = renderTasksWidget({ items, theme, width: 80, now });
     expect(lines[0]).toContain("2 running");
@@ -69,8 +90,8 @@ describe("renderTasksWidget", () => {
 
   it("still renders one row per task when multiple are in_progress", () => {
     const items: Task[] = [
-      { id: "1", content: "A", status: "in_progress", startedAt: 0 },
-      { id: "2", content: "B", status: "in_progress", startedAt: 0 },
+      { id: "1", subject: "A", description: "A", status: "in_progress", startedAt: 0 },
+      { id: "2", subject: "B", description: "B", status: "in_progress", startedAt: 0 },
     ];
     const lines = renderTasksWidget({ items, theme, width: 80, now: 10_000 });
     expect(lines).toHaveLength(1 + 2);
@@ -79,7 +100,7 @@ describe("renderTasksWidget", () => {
   });
 
   it("truncates long rows to width", () => {
-    const items: Task[] = [{ id: "1", content: "x".repeat(200), status: "pending" }];
+    const items: Task[] = [{ id: "1", subject: "x".repeat(200), description: "x".repeat(200), status: "pending" }];
     const lines = renderTasksWidget({ items, theme, width: 50 });
     for (const line of lines) expect(visibleWidth(line)).toBeLessThanOrEqual(50);
   });
