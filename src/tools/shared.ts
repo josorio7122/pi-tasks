@@ -58,3 +58,16 @@ export async function refreshWidget(opts: RefreshWidgetOptions): Promise<Task[]>
   opts.ctx.ui.setWidget(opts.toolName, tasks.length === 0 ? undefined : widget);
   return tasks;
 }
+
+/**
+ * Strip keys whose value is `undefined`. Lets us spread an options object into
+ * a target without tripping `exactOptionalPropertyTypes` — `{ x: undefined }`
+ * is not assignable to `{ x?: string }` under that flag, but a missing key is.
+ */
+export function pickDefined<T extends Record<string, unknown>>(obj: T): { [K in keyof T]?: NonNullable<T[K]> } {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out as { [K in keyof T]?: NonNullable<T[K]> };
+}
