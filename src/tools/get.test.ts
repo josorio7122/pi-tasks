@@ -1,10 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTask } from "../storage/index.js";
-import { mockTheme } from "../test/mock-theme.js";
+import { makeMockContext } from "../test/mock-context.js";
 import { buildTaskGetTool } from "./get.js";
 
 let root: string;
@@ -16,12 +15,7 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function ctx(): ExtensionContext {
-  return {
-    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendEntry: vi.fn() } as never,
-    ui: { theme: mockTheme(), setWidget: vi.fn() },
-  } as unknown as ExtensionContext;
-}
+const ctx = makeMockContext;
 
 describe("task_get tool", () => {
   it("returns 'Task not found' on missing", async () => {

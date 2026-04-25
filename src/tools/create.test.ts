@@ -1,9 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mockTheme } from "../test/mock-theme.js";
+import { afterEach, beforeEach, describe, expect, it, type vi } from "vitest";
+import { makeMockContext } from "../test/mock-context.js";
 import { buildTaskCreateTool } from "./create.js";
 
 let root: string;
@@ -16,18 +15,10 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function makeCtx(): ExtensionContext {
-  const setWidget = vi.fn();
-  return {
-    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendCustomEntry: vi.fn() } as never,
-    ui: { theme: mockTheme(), setWidget },
-  } as unknown as ExtensionContext;
-}
-
 describe("task_create tool", () => {
   it("returns 'Task #<id> created successfully: <subject>' (V2 wording)", async () => {
     const tool = buildTaskCreateTool({ tasksRoot: root });
-    const ctx = makeCtx();
+    const ctx = makeMockContext();
     const r = await tool.execute(
       "tc1",
       { subject: "Build login flow", description: "Wire credential check." },
@@ -41,7 +32,7 @@ describe("task_create tool", () => {
 
   it("forces status: pending even if rogue field smuggled (defense in depth)", async () => {
     const tool = buildTaskCreateTool({ tasksRoot: root });
-    const ctx = makeCtx();
+    const ctx = makeMockContext();
     await tool.execute(
       "tc2",
       // biome-ignore lint/suspicious/noExplicitAny: smuggle test
@@ -57,7 +48,7 @@ describe("task_create tool", () => {
 
   it("calls ui.setWidget with non-empty widget after create", async () => {
     const tool = buildTaskCreateTool({ tasksRoot: root });
-    const ctx = makeCtx();
+    const ctx = makeMockContext();
     await tool.execute("tc3", { subject: "x", description: "y" }, new AbortController().signal, undefined, ctx);
     expect(ctx.ui.setWidget as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(1);
   });

@@ -1,10 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTask, updateTask } from "../storage/index.js";
-import { mockTheme } from "../test/mock-theme.js";
+import { makeMockContext } from "../test/mock-context.js";
 import { buildTaskUpdateTool } from "./update.js";
 
 let root: string;
@@ -17,12 +16,7 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-function ctx(): ExtensionContext {
-  return {
-    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendCustomEntry: vi.fn() } as never,
-    ui: { theme: mockTheme(), setWidget: vi.fn() },
-  } as unknown as ExtensionContext;
-}
+const ctx = makeMockContext;
 
 describe("task_update tool", () => {
   it("returns 'Updated task #<id> <fields>' on success", async () => {
