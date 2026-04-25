@@ -1,4 +1,3 @@
-// src/test/mock-theme.ts
 import type { Theme } from "@mariozechner/pi-coding-agent";
 
 /**

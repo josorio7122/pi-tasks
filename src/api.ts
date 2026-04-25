@@ -72,6 +72,5 @@ export function registerTasksTools(pi: ExtensionAPI, config: CreateTasksToolsCon
 export { formatElapsed } from "./render/elapsed.js";
 export type { RenderTasksWidgetProps } from "./render/widget.js";
 export { renderTasksWidget } from "./render/widget.js";
-// Re-export public types/utilities for consumers.
 export type { Task, TaskStatus } from "./schema.js";
 export { TaskSchema, TaskStatusSchema } from "./schema.js";
