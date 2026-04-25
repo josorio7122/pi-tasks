@@ -1,86 +1,111 @@
 import { Value } from "@sinclair/typebox/value";
 import { describe, expect, it } from "vitest";
 import {
-  type Task,
-  TaskActionSchema,
-  TaskDetailsSchema,
+  TaskCreateParams,
+  TaskGetParams,
+  TaskListParams,
   TaskSchema,
   TaskStatusSchema,
-  TaskToolParamsSchema,
+  TaskUpdateParams,
+  TaskUpdateStatusSchema,
 } from "./schema.js";
 
-describe("TaskSchema", () => {
-  it("accepts a minimal valid task", () => {
-    const t: Task = { id: "1", content: "Build X", status: "pending" };
-    expect(Value.Check(TaskSchema, t)).toBe(true);
-  });
-
-  it("accepts a fully populated task", () => {
-    const t: Task = {
-      id: "1",
-      content: "Build X",
-      status: "in_progress",
-      activeForm: "Building X",
-      startedAt: 1_700_000_000_000,
-    };
-    expect(Value.Check(TaskSchema, t)).toBe(true);
-  });
-
-  it("rejects empty id", () => {
-    expect(Value.Check(TaskSchema, { id: "", content: "x", status: "pending" })).toBe(false);
-  });
-
-  it("rejects empty content", () => {
-    expect(Value.Check(TaskSchema, { id: "1", content: "", status: "pending" })).toBe(false);
-  });
-});
-
 describe("TaskStatusSchema", () => {
-  it.each(["pending", "in_progress", "completed"])("accepts valid status %s", (s) => {
-    expect(Value.Check(TaskStatusSchema, s)).toBe(true);
+  it("accepts the three live statuses", () => {
+    for (const s of ["pending", "in_progress", "completed"]) {
+      expect(Value.Check(TaskStatusSchema, s)).toBe(true);
+    }
   });
 
-  it("rejects unknown status", () => {
-    expect(Value.Check(TaskStatusSchema, "done")).toBe(false);
+  it("rejects deleted (only allowed via update)", () => {
+    expect(Value.Check(TaskStatusSchema, "deleted")).toBe(false);
   });
 });
 
-describe("TaskActionSchema", () => {
-  it("accepts list/clear without extras", () => {
-    expect(Value.Check(TaskActionSchema, { action: "list" })).toBe(true);
-    expect(Value.Check(TaskActionSchema, { action: "clear" })).toBe(true);
+describe("TaskUpdateStatusSchema", () => {
+  it("accepts deleted", () => {
+    expect(Value.Check(TaskUpdateStatusSchema, "deleted")).toBe(true);
   });
+});
 
-  it("accepts add with activeForm", () => {
+describe("TaskSchema", () => {
+  it("accepts a minimal task", () => {
     expect(
-      Value.Check(TaskActionSchema, {
-        action: "add",
-        content: "Build X",
-        activeForm: "Building X",
-      }),
-    ).toBe(true);
-  });
-
-  it("accepts update with status transition", () => {
-    expect(
-      Value.Check(TaskActionSchema, {
-        action: "update",
+      Value.Check(TaskSchema, {
         id: "1",
-        status: "in_progress",
+        subject: "Build login flow",
+        description: "Wire credential check.",
+        status: "pending",
       }),
     ).toBe(true);
   });
-});
 
-describe("TaskDetailsSchema", () => {
-  it("accepts { tasks: [], action }", () => {
-    expect(Value.Check(TaskDetailsSchema, { tasks: [], action: "list" })).toBe(true);
+  it("rejects extra fields", () => {
+    expect(
+      Value.Check(TaskSchema, {
+        id: "1",
+        subject: "x",
+        description: "y",
+        status: "pending",
+        rogue: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects empty subject", () => {
+    expect(
+      Value.Check(TaskSchema, {
+        id: "1",
+        subject: "",
+        description: "y",
+        status: "pending",
+      }),
+    ).toBe(false);
   });
 });
 
-describe("TaskToolParamsSchema", () => {
-  it("is a top-level type:object (OpenAI function-calling requirement)", () => {
-    expect(Value.Check(TaskToolParamsSchema, { action: "list" })).toBe(true);
-    expect(Value.Check(TaskToolParamsSchema, { action: "add", content: "x" })).toBe(true);
+describe("TaskCreateParams", () => {
+  it("accepts subject + description", () => {
+    expect(Value.Check(TaskCreateParams, { subject: "x", description: "y" })).toBe(true);
+  });
+
+  it("rejects status field (server forces pending)", () => {
+    expect(
+      Value.Check(TaskCreateParams, {
+        subject: "x",
+        description: "y",
+        status: "completed",
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects missing subject", () => {
+    expect(Value.Check(TaskCreateParams, { description: "y" })).toBe(false);
+  });
+});
+
+describe("TaskUpdateParams", () => {
+  it("accepts taskId only", () => {
+    expect(Value.Check(TaskUpdateParams, { taskId: "1" })).toBe(true);
+  });
+
+  it("accepts status: deleted", () => {
+    expect(Value.Check(TaskUpdateParams, { taskId: "1", status: "deleted" })).toBe(true);
+  });
+
+  it("rejects unknown fields", () => {
+    expect(Value.Check(TaskUpdateParams, { taskId: "1", owner: "alice" })).toBe(false);
+  });
+});
+
+describe("TaskListParams / TaskGetParams", () => {
+  it("list rejects any field", () => {
+    expect(Value.Check(TaskListParams, {})).toBe(true);
+    expect(Value.Check(TaskListParams, { foo: 1 })).toBe(false);
+  });
+
+  it("get requires taskId", () => {
+    expect(Value.Check(TaskGetParams, { taskId: "1" })).toBe(true);
+    expect(Value.Check(TaskGetParams, {})).toBe(false);
   });
 });

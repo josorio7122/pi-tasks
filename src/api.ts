@@ -1,28 +1,77 @@
-// Public API for pi-tasks. Curated — only intentional exports.
+import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { NudgeConfig } from "./nudge.js";
+import { ENV_SNAPSHOT_AT_LOAD, isInheritedTaskListId } from "./storage/index.js";
+import { buildTaskCreateTool } from "./tools/create.js";
+import { buildTaskGetTool } from "./tools/get.js";
+import { buildTaskListTool } from "./tools/list.js";
+import { buildTaskUpdateTool } from "./tools/update.js";
+
+export type CreateTasksToolsConfig = {
+  /** Default "task" → tools become task_create, task_update, task_list, task_get. */
+  namePrefix?: string;
+  /** Default "Task" → labels: "Task Create", "Task Update", ... */
+  labelPrefix?: string;
+  /** Widget brand glyph. Default "●". */
+  brand?: string;
+  /** Widget header label. Default "Tasks". */
+  headerPrefix?: string;
+  /** Verification nudge: true=default text, string=override, false=disable. Default true. */
+  verificationNudge?: NudgeConfig;
+  /** Verifier subagent name embedded in default nudge text. Default "verifier". */
+  verifierAgentName?: string;
+  /** Override the storage root. Default ~/.pi/agent/tasks. */
+  tasksRoot?: string;
+};
+
+function namesFromConfig(config: CreateTasksToolsConfig) {
+  const np = config.namePrefix ?? "task";
+  const lp = config.labelPrefix ?? "Task";
+  return {
+    create: { name: `${np}_create`, label: `${lp} Create` },
+    update: { name: `${np}_update`, label: `${lp} Update` },
+    list: { name: `${np}_list`, label: `${lp} List` },
+    get: { name: `${np}_get`, label: `${lp} Get` },
+  };
+}
+
+export function createTasksTools(config: CreateTasksToolsConfig = {}) {
+  const names = namesFromConfig(config);
+  const inherited = isInheritedTaskListId({ envSnapshot: ENV_SNAPSHOT_AT_LOAD });
+  // Only include keys we actually have values for — avoids tripping
+  // exactOptionalPropertyTypes by passing `undefined` to optional string fields.
+  const common: { brand?: string; headerPrefix?: string; tasksRoot?: string } = {};
+  if (config.brand !== undefined) common.brand = config.brand;
+  if (config.headerPrefix !== undefined) common.headerPrefix = config.headerPrefix;
+  if (config.tasksRoot !== undefined) common.tasksRoot = config.tasksRoot;
+
+  const updateExtras: { verificationNudge?: NudgeConfig; verifierAgentName?: string } = {};
+  if (config.verificationNudge !== undefined) updateExtras.verificationNudge = config.verificationNudge;
+  if (config.verifierAgentName !== undefined) updateExtras.verifierAgentName = config.verifierAgentName;
+
+  return {
+    create: buildTaskCreateTool({ ...common, ...names.create }),
+    update: buildTaskUpdateTool({
+      ...common,
+      ...names.update,
+      inheritedTaskListId: inherited,
+      ...updateExtras,
+    }),
+    list: buildTaskListTool({ ...common, ...names.list }),
+    get: buildTaskGetTool({ ...common, ...names.get }),
+  };
+}
+
+export function registerTasksTools(pi: ExtensionAPI, config: CreateTasksToolsConfig = {}): void {
+  const tools = createTasksTools(config);
+  pi.registerTool(tools.create);
+  pi.registerTool(tools.update);
+  pi.registerTool(tools.list);
+  pi.registerTool(tools.get);
+}
 
 export { formatElapsed } from "./render/elapsed.js";
-export type { RenderTasksErrorProps, RenderTasksResultProps } from "./render/result.js";
-export { renderTasksError, renderTasksResult } from "./render/result.js";
-export type {
-  RenderTasksCallComponentProps,
-  RenderTasksErrorComponentProps,
-  RenderTasksResultComponentProps,
-} from "./render/result-component.js";
-export {
-  renderTasksCallComponent,
-  renderTasksErrorComponent,
-  renderTasksResultComponent,
-} from "./render/result-component.js";
-export { BRANCH, BULLET, branch, bullet, CROSS, checkbox, indent } from "./render/tree.js";
-// Rendering
 export type { RenderTasksWidgetProps } from "./render/widget.js";
 export { renderTasksWidget } from "./render/widget.js";
-// Schema
-export type { Task, TaskAction, TaskDetails, TaskStatus } from "./schema.js";
-export { TaskActionSchema, TaskDetailsSchema, TaskSchema, TaskStatusSchema, TaskToolParamsSchema } from "./schema.js";
-// State (pure functions)
-export type { SessionEntryLike } from "./state.js";
-export { applyAction, reconstructTasks } from "./state.js";
-// Tool factory (headline API)
-export type { CreateTasksToolConfig } from "./tool.js";
-export { createTasksTool } from "./tool.js";
+// Re-export public types/utilities for consumers.
+export type { Task, TaskStatus } from "./schema.js";
+export { TaskSchema, TaskStatusSchema } from "./schema.js";

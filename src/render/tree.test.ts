@@ -48,7 +48,7 @@ describe("bullet / branch / indent glyphs", () => {
 });
 
 describe("styleTaskContent", () => {
-  const sample = (status: TaskStatus): Task => ({ id: "1", content: "hi", status });
+  const sample = (status: TaskStatus): Task => ({ id: "1", subject: "hi", description: "hi", status });
 
   it("passes through pending", () => {
     expect(styleTaskContent(sample("pending"), theme)).toBe("hi");

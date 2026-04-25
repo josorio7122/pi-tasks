@@ -1,5 +1,6 @@
 import { type Static, Type } from "@sinclair/typebox";
 
+/** Live task statuses. `deleted` only valid on TaskUpdate. */
 export const TaskStatusSchema = Type.Union([
   Type.Literal("pending"),
   Type.Literal("in_progress"),
@@ -7,66 +8,67 @@ export const TaskStatusSchema = Type.Union([
 ]);
 export type TaskStatus = Static<typeof TaskStatusSchema>;
 
-export const TaskSchema = Type.Object({
-  id: Type.String({ minLength: 1 }),
-  content: Type.String({ minLength: 1 }),
-  status: TaskStatusSchema,
-  activeForm: Type.Optional(Type.String({ minLength: 1 })),
-  startedAt: Type.Optional(Type.Number()),
-});
+/** Status enum on update accepts an extra "deleted" sentinel that triggers task removal. */
+export const TaskUpdateStatusSchema = Type.Union([
+  Type.Literal("pending"),
+  Type.Literal("in_progress"),
+  Type.Literal("completed"),
+  Type.Literal("deleted"),
+]);
+export type TaskUpdateStatus = Static<typeof TaskUpdateStatusSchema>;
+
+/** On-disk shape of one task. */
+export const TaskSchema = Type.Object(
+  {
+    id: Type.String({ minLength: 1 }),
+    subject: Type.String({ minLength: 1 }),
+    description: Type.String({ minLength: 1 }),
+    activeForm: Type.Optional(Type.String({ minLength: 1 })),
+    status: TaskStatusSchema,
+    startedAt: Type.Optional(Type.Number()),
+  },
+  { additionalProperties: false },
+);
 export type Task = Static<typeof TaskSchema>;
 
-export const TaskActionSchema = Type.Union([
-  Type.Object({ action: Type.Literal("list") }),
-  Type.Object({ action: Type.Literal("clear") }),
-  Type.Object({ action: Type.Literal("replace"), items: Type.Array(TaskSchema) }),
-  Type.Object({
-    action: Type.Literal("add"),
-    content: Type.String({ minLength: 1 }),
-    activeForm: Type.Optional(Type.String({ minLength: 1 })),
-  }),
-  Type.Object({
-    action: Type.Literal("update"),
-    id: Type.String({ minLength: 1 }),
-    content: Type.Optional(Type.String({ minLength: 1 })),
-    activeForm: Type.Optional(Type.String({ minLength: 1 })),
-    status: Type.Optional(TaskStatusSchema),
-  }),
-  Type.Object({ action: Type.Literal("complete"), id: Type.String({ minLength: 1 }) }),
-  Type.Object({ action: Type.Literal("remove"), id: Type.String({ minLength: 1 }) }),
-]);
-export type TaskAction = Static<typeof TaskActionSchema>;
-
-export const TaskDetailsSchema = Type.Object({
-  tasks: Type.Array(TaskSchema),
-  action: Type.String(),
-  /** Task content affected by the action, or a bulk summary like "3 tasks". Undefined for clear/list/error. */
-  subject: Type.Optional(Type.String()),
-  /** Past-tense verb describing what happened. e.g. "added", "completed", "started", "replaced". */
-  transition: Type.Optional(Type.String()),
-});
-export type TaskDetails = Static<typeof TaskDetailsSchema>;
-
-const TASK_ACTION_NAMES = ["list", "clear", "replace", "add", "update", "complete", "remove"] as const;
-
-export const TaskToolParamsSchema = Type.Object(
+/** task_create input — server forces status: pending regardless of input. */
+export const TaskCreateParams = Type.Object(
   {
-    action: Type.Union(
-      TASK_ACTION_NAMES.map((name) => Type.Literal(name)),
-      { description: "The action to perform" },
-    ),
-    items: Type.Optional(Type.Array(TaskSchema, { description: "Required for action=replace" })),
-    content: Type.Optional(Type.String({ description: "Required for action=add; optional for action=update" })),
+    subject: Type.String({
+      minLength: 1,
+      description: "Brief, actionable title in imperative form (e.g. 'Fix authentication bug')",
+    }),
+    description: Type.String({
+      minLength: 1,
+      description: "What needs to be done",
+    }),
     activeForm: Type.Optional(
       Type.String({
+        minLength: 1,
         description:
-          "Present-continuous form of content (e.g. 'Building X…' for content 'Build X'). Shown in the widget header while the task is in_progress.",
+          "Present continuous form shown in the spinner when the task is in_progress (e.g. 'Fixing authentication bug')",
       }),
     ),
-    id: Type.Optional(Type.String({ description: "Required for action=update/complete/remove" })),
-    status: Type.Optional(TaskStatusSchema),
   },
-  {
-    description: "Track session-scoped tasks. Shape of params depends on action field.",
-  },
+  { additionalProperties: false },
 );
+export type TaskCreateInput = Static<typeof TaskCreateParams>;
+
+/** task_update input — taskId required, all other fields optional and merged onto disk. */
+export const TaskUpdateParams = Type.Object(
+  {
+    taskId: Type.String({ minLength: 1, description: "ID of the task to update" }),
+    subject: Type.Optional(Type.String({ minLength: 1 })),
+    description: Type.Optional(Type.String({ minLength: 1 })),
+    activeForm: Type.Optional(Type.String({ minLength: 1 })),
+    status: Type.Optional(TaskUpdateStatusSchema),
+  },
+  { additionalProperties: false },
+);
+export type TaskUpdateInput = Static<typeof TaskUpdateParams>;
+
+export const TaskListParams = Type.Object({}, { additionalProperties: false });
+export type TaskListInput = Static<typeof TaskListParams>;
+
+export const TaskGetParams = Type.Object({ taskId: Type.String({ minLength: 1 }) }, { additionalProperties: false });
+export type TaskGetInput = Static<typeof TaskGetParams>;

@@ -27,7 +27,7 @@ function headerFor(props: HeaderProps): string {
   const soloActive = active.length === 1 ? active[0] : undefined;
   if (soloActive) {
     const elapsed = soloActive.startedAt !== undefined ? ` (${formatElapsed(now - soloActive.startedAt)})` : "";
-    return `${brand} ${soloActive.activeForm ?? soloActive.content}…${elapsed}`;
+    return `${brand} ${soloActive.activeForm ?? soloActive.subject}…${elapsed}`;
   }
   if (active.length > 1) return `${brand} ${active.length} running · ${done}/${items.length} done`;
   return `${brand} ${headerPrefix} · ${done}/${items.length} done`;

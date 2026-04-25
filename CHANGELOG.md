@@ -4,6 +4,30 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.0 — 2026-04-25
+
+### Breaking changes
+
+- The single `task` tool has been replaced with four tools: `task_create`, `task_update`, `task_list`, `task_get`, mirroring Claude Code's V2 task system.
+- Action enum (`add`/`replace`/`update`/`complete`/`remove`/`clear`/`list`) is gone. Use the appropriate tool instead.
+- `Task.content` renamed to `Task.subject`; `description` is now a separate required field on creation.
+- Tool result text changed from `Task(<subject>: <transition>)` to V2-style strings (`Task #<id> created successfully: ...`, etc.).
+- Public API: `createTasksTool` (singular) replaced by `createTasksTools` (plural) and `registerTasksTools`.
+
+### Added
+
+- Per-task JSON storage at `~/.pi/agent/tasks/<sessionId>/<id>.json`, with `proper-lockfile` concurrency.
+- `.highwatermark` file prevents id reuse after deletion.
+- Subagent task list sharing via `PI_TASK_LIST_ID` env carrier set on `session_start`.
+- Fork branches clone the parent's task dir on `session_start` (reason="fork") so branches don't share mutable state.
+- Verification nudge — when a task list of 3+ tasks closes out without any `verif`-named task, `task_update` appends a directive to spawn the bundled `verifier` subagent.
+- Bundled `agents/verifier.md` — read-only verification subagent.
+
+### Removed
+
+- Session-entry reconstruction (`applyAction`, `reconstructTasks`). Disk is now the source of truth.
+- Custom result/error/call render components — V2 plain text is used directly.
+
 ## [0.1.0] — 2026-04-20
 
 Initial release.
