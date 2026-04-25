@@ -1,26 +1,19 @@
 import { type AgentToolResult, defineTool, type ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Value } from "@sinclair/typebox/value";
-import { renderTasksWidget } from "../render/widget.js";
 import { type Task, TaskGetParams } from "../schema.js";
-import { getTask, getTaskListId, listTasks } from "../storage/index.js";
+import { getTask, getTaskListId } from "../storage/index.js";
 import { GET_DESCRIPTION, GET_PROMPT } from "./prompts/get.js";
+import { refreshWidget, resolveToolDefaults, type ToolCommonConfig } from "./shared.js";
 
-export type BuildTaskGetToolConfig = {
-  name?: string;
-  label?: string;
-  brand?: string;
-  headerPrefix?: string;
-  tasksRoot?: string;
-};
+export type BuildTaskGetToolConfig = ToolCommonConfig;
 
 export type GetTaskDetails = { task: Task | null };
 
 export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
-  const name = config.name ?? "task_get";
-  const label = config.label ?? "Task Get";
-  const brand = config.brand ?? "●";
-  const headerPrefix = config.headerPrefix ?? "Tasks";
-  const root = config.tasksRoot;
+  const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {
+    name: "task_get",
+    label: "Task Get",
+  });
 
   return defineTool({
     name,
@@ -46,9 +39,7 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const task = await getTask(taskListId, input.taskId, root);
 
-      const tasks = await listTasks(taskListId, root);
-      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
+      await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
 
       if (!task) {
         return { content: [{ type: "text", text: "Task not found" }], details: { task: null } };

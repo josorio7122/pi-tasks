@@ -6,18 +6,12 @@ import {
 } from "@mariozechner/pi-coding-agent";
 import { Value } from "@sinclair/typebox/value";
 import { writeMarker } from "../common/markers.js";
-import { renderTasksWidget } from "../render/widget.js";
 import { type TaskCreateInput, TaskCreateParams } from "../schema.js";
-import { createTask, getTaskListId, listTasks } from "../storage/index.js";
+import { createTask, getTaskListId } from "../storage/index.js";
 import { CREATE_DESCRIPTION, CREATE_PROMPT } from "./prompts/create.js";
+import { refreshWidget, resolveToolDefaults, type ToolCommonConfig } from "./shared.js";
 
-export type BuildTaskCreateToolConfig = {
-  name?: string;
-  label?: string;
-  brand?: string;
-  headerPrefix?: string;
-  tasksRoot?: string;
-};
+export type BuildTaskCreateToolConfig = ToolCommonConfig;
 
 export type CreateTaskDetails = {
   taskId: string;
@@ -25,11 +19,10 @@ export type CreateTaskDetails = {
 };
 
 export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
-  const name = config.name ?? "task_create";
-  const label = config.label ?? "Task Create";
-  const brand = config.brand ?? "●";
-  const headerPrefix = config.headerPrefix ?? "Tasks";
-  const root = config.tasksRoot;
+  const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {
+    name: "task_create",
+    label: "Task Create",
+  });
 
   return defineTool({
     name,
@@ -58,7 +51,6 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
         ...(activeForm !== undefined ? { activeForm } : {}),
       };
 
-      // Validate the sanitized payload (without extras) — guards against empty subject/description.
       if (!Value.Check(TaskCreateParams, sanitized)) {
         return {
           content: [{ type: "text", text: "task_create: invalid input" }],
@@ -69,12 +61,8 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const taskId = await createTask(taskListId, sanitized, root);
 
-      // Widget refresh.
-      const tasks = await listTasks(taskListId, root);
-      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
+      await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
 
-      // Audit
       void writeMarker("task-event", { kind: "create", taskId, subject: sanitized.subject });
       (ctx.sessionManager as SessionManager).appendCustomEntry("task-event", {
         kind: "create",
@@ -82,9 +70,8 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
         subject: sanitized.subject,
       });
 
-      const text = `Task #${taskId} created successfully: ${sanitized.subject}`;
       return {
-        content: [{ type: "text", text }],
+        content: [{ type: "text", text: `Task #${taskId} created successfully: ${sanitized.subject}` }],
         details: { taskId, subject: sanitized.subject },
       };
     },
