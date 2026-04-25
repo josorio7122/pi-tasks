@@ -19,7 +19,7 @@ afterEach(() => {
 
 function ctx(): ExtensionContext {
   return {
-    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendEntry: vi.fn() } as never,
+    sessionManager: { getSessionId: () => "sess", getEntries: () => [], appendCustomEntry: vi.fn() } as never,
     ui: { theme: mockTheme(), setWidget: vi.fn() },
   } as unknown as ExtensionContext;
 }

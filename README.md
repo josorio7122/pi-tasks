@@ -108,7 +108,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions, [SECURITY.md](SECURITY.m
 
 ## Migrating from v0.1
 
-v0.2 mirrors Claude Code's V2 task system. See the [v0.2 spec/plan](docs/) for the full design. Breaking changes:
+v0.2 mirrors Claude Code's V2 task system. The full spec/plan lives under `docs/superpowers/` locally — gitignored and not shipped. Breaking changes:
 
 - Single `task` tool replaced with 4 tools (`task_create`, `task_update`, `task_list`, `task_get`).
 - Action enum gone — use the appropriate tool.

@@ -38,12 +38,7 @@ export function buildTaskListTool(config: BuildTaskListToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const tasks = await listTasks(taskListId, root);
 
-      let widget: string[] = [];
-      try {
-        widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      } catch {
-        // legacy widget reads Task.content; tolerate until Task 20.
-      }
+      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
       ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
 
       const text =

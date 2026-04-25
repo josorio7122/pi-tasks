@@ -1,4 +1,9 @@
-import { type AgentToolResult, defineTool, type ExtensionContext } from "@mariozechner/pi-coding-agent";
+import {
+  type AgentToolResult,
+  defineTool,
+  type ExtensionContext,
+  type SessionManager,
+} from "@mariozechner/pi-coding-agent";
 import { Value } from "@sinclair/typebox/value";
 import { writeMarker } from "../common/markers.js";
 import { renderTasksWidget } from "../render/widget.js";
@@ -66,24 +71,14 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const taskId = await createTask(taskListId, sanitized, root);
 
-      // Widget refresh. Wrapped in try/catch because the legacy widget renderer
-      // still expects `Task.content`; Task 20 will migrate it to `Task.subject`.
-      // Until then, swallow render errors so this tool stays green.
+      // Widget refresh.
       const tasks = await listTasks(taskListId, root);
-      let widget: string[] = [];
-      try {
-        widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      } catch {
-        // widget render incompatible with new schema until Task 20 lands; safe to swallow
-      }
+      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
       ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
 
       // Audit
       void writeMarker("task-event", { kind: "create", taskId, subject: sanitized.subject });
-      const sm = ctx.sessionManager as unknown as {
-        appendEntry?: (kind: string, payload: { kind: string; taskId: string; subject: string }) => void;
-      };
-      sm.appendEntry?.("task-event", {
+      (ctx.sessionManager as SessionManager).appendCustomEntry("task-event", {
         kind: "create",
         taskId,
         subject: sanitized.subject,

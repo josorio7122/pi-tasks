@@ -1,4 +1,9 @@
-import { type AgentToolResult, defineTool, type ExtensionContext } from "@mariozechner/pi-coding-agent";
+import {
+  type AgentToolResult,
+  defineTool,
+  type ExtensionContext,
+  type SessionManager,
+} from "@mariozechner/pi-coding-agent";
 import { Value } from "@sinclair/typebox/value";
 import { writeMarker } from "../common/markers.js";
 import { type NudgeConfig, resolveNudge, shouldEmitNudge } from "../nudge.js";
@@ -56,30 +61,22 @@ export function buildTaskUpdateTool(config: BuildTaskUpdateToolConfig = {}) {
       const { taskId, ...rest } = input;
       const result = await updateTask(taskListId, taskId, rest, root);
 
-      // Widget refresh after every update. Wrapped in try/catch because the legacy
-      // widget renderer still expects `Task.content`; Task 20 will migrate it to
-      // `Task.subject`. Until then, swallow render errors so this tool stays green.
-      const tasks = await listTasks(taskListId, root);
-      let widget: string[] = [];
-      try {
-        widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
-      } catch {
-        // legacy widget reads Task.content; tolerate until Task 20.
-      }
-      ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
-
-      // Audit
-      void writeMarker("task-event", { kind: "update", taskId, fields: result.updatedFields });
-      const sm = ctx.sessionManager as unknown as { appendEntry?: (k: string, p: unknown) => void };
-      sm.appendEntry?.("task-event", result);
-
-      // Result text
+      // Failure path: don't refresh widget or emit audit/nudge on a no-op.
       if (!result.success) {
         return {
           content: [{ type: "text", text: result.error ?? `Task #${taskId} not found` }],
           details: result,
         };
       }
+
+      // Widget refresh after a successful update.
+      const tasks = await listTasks(taskListId, root);
+      const widget = renderTasksWidget({ items: tasks, theme: ctx.ui.theme, width: 80, brand, headerPrefix });
+      ctx.ui.setWidget(name, tasks.length === 0 ? undefined : widget);
+
+      // Audit
+      void writeMarker("task-event", { kind: "update", taskId, fields: result.updatedFields });
+      (ctx.sessionManager as SessionManager).appendCustomEntry("task-event", result);
 
       let text =
         result.updatedFields.length === 0
