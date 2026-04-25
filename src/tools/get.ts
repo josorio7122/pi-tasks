@@ -39,6 +39,9 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const task = await getTask(taskListId, input.taskId, root);
 
+      // Read-only operation, but refresh anyway so the widget stays in sync with disk
+      // if the user manually edited a task file between reads. V2 doesn't do this; we keep
+      // it for consistency with task_list, which also refreshes on a read.
       await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
 
       if (!task) {
