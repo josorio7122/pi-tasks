@@ -52,8 +52,7 @@ export function buildTaskUpdateTool(config: BuildTaskUpdateToolConfig = {}) {
       if (!Value.Check(TaskUpdateParams, input)) {
         return {
           content: [{ type: "text", text: "task_update: invalid input" }],
-          // biome-ignore lint/suspicious/noExplicitAny: details typed for happy path
-          details: { success: false, taskId: "", updatedFields: [] } as any,
+          details: { success: false, taskId: "", updatedFields: [] },
         };
       }
 

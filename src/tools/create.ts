@@ -60,11 +60,9 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
 
       // Validate the sanitized payload (without extras) — guards against empty subject/description.
       if (!Value.Check(TaskCreateParams, sanitized)) {
-        const text = "task_create: invalid input";
         return {
-          content: [{ type: "text", text }],
-          // biome-ignore lint/suspicious/noExplicitAny: details typed for the happy path
-          details: { taskId: "", subject: "" } as any,
+          content: [{ type: "text", text: "task_create: invalid input" }],
+          details: { taskId: "", subject: "" },
         };
       }
 
