@@ -11,7 +11,7 @@ export function packageRoot(): string {
 
 /**
  * Sanitize a string for safe filesystem path use. Mirrors V2 sanitizePathComponent
- * (~/Code/claude-code/src/utils/tasks.ts:217). Only allows [A-Za-z0-9_-]; everything
+ * (V2 tasks.ts:217). Only allows [A-Za-z0-9_-]; everything
  * else becomes "-".
  */
 export function sanitizePathComponent(input: string): string {
