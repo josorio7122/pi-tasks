@@ -18,14 +18,36 @@ describe("renderTasksWidget", () => {
     expect(renderTasksWidget({ items: [], theme, width: 80 })).toEqual([]);
   });
 
-  it("falls back to count header when no task is in_progress", () => {
+  it("renders V2-parity aggregate header (counts only) when nothing is in_progress", () => {
     const lines = renderTasksWidget({ items: sample(), theme, width: 80 });
-    expect(lines[0]).toContain("Tasks");
-    expect(lines[0]).toContain("1/2 done");
+    expect(lines[0]).toContain("2 tasks");
+    expect(lines[0]).toContain("1 done");
+    expect(lines[0]).toContain("1 open");
+    expect(lines[0]).not.toContain("in progress");
   });
 
-  it("renders activeForm + elapsed in header when one task is in_progress", () => {
-    const now = 100_000;
+  it("includes the in-progress count when at least one task is in_progress", () => {
+    const items: Task[] = [
+      { id: "1", subject: "Build", description: "Build", activeForm: "Building", status: "in_progress" },
+      { id: "2", subject: "Test", description: "Test", status: "pending" },
+    ];
+    const lines = renderTasksWidget({ items, theme, width: 80 });
+    expect(lines[0]).toContain("2 tasks");
+    expect(lines[0]).toContain("0 done");
+    expect(lines[0]).toContain("1 in progress");
+    expect(lines[0]).toContain("1 open");
+  });
+
+  it("never replaces the header with activeForm — that signal lives on the row, not the title", () => {
+    const items: Task[] = [
+      { id: "1", subject: "Build", description: "Build", activeForm: "Building", status: "in_progress" },
+    ];
+    const lines = renderTasksWidget({ items, theme, width: 80 });
+    expect(lines[0]).not.toContain("Building…");
+    expect(lines[0]).not.toContain("Build…");
+  });
+
+  it("never includes a per-task elapsed timer in the header", () => {
     const items: Task[] = [
       {
         id: "1",
@@ -33,56 +55,35 @@ describe("renderTasksWidget", () => {
         description: "Build",
         activeForm: "Building",
         status: "in_progress",
-        startedAt: now - 42_000,
+        startedAt: 0,
       },
     ];
-    const lines = renderTasksWidget({ items, theme, width: 80, now });
-    expect(lines[0]).toContain("Building");
-    expect(lines[0]).toContain("(42s)");
+    const lines = renderTasksWidget({ items, theme, width: 80 });
+    expect(lines[0]).not.toMatch(/\(\d+s\)/);
   });
 
-  it("falls back to content when activeForm is missing", () => {
-    const items: Task[] = [{ id: "1", subject: "Build", description: "Build", status: "in_progress" }];
-    const lines = renderTasksWidget({ items, theme, width: 80, now: 100_000 });
-    expect(lines[0]).toContain("Build…");
-  });
-
-  it("applies custom brand and headerPrefix via config", () => {
+  it("applies custom brand", () => {
     const lines = renderTasksWidget({
       items: [{ id: "1", subject: "a", description: "a", status: "pending" }],
       theme,
       width: 80,
       brand: "🧪",
-      headerPrefix: "Todo",
     });
     expect(lines[0]).toContain("🧪");
-    expect(lines[0]).toContain("Todo");
+    expect(lines[0]).toContain("1 tasks");
   });
 
-  it("shows aggregate 'N running' header when multiple tasks are in_progress", () => {
-    const now = 100_000;
+  it("counts every status independently when multiple tasks are in_progress", () => {
     const items: Task[] = [
-      {
-        id: "1",
-        subject: "A",
-        description: "A",
-        activeForm: "Doing A",
-        status: "in_progress",
-        startedAt: now - 5_000,
-      },
-      {
-        id: "2",
-        subject: "B",
-        description: "B",
-        activeForm: "Doing B",
-        status: "in_progress",
-        startedAt: now - 2_000,
-      },
+      { id: "1", subject: "A", description: "A", activeForm: "Doing A", status: "in_progress" },
+      { id: "2", subject: "B", description: "B", activeForm: "Doing B", status: "in_progress" },
       { id: "3", subject: "C", description: "C", status: "pending" },
     ];
-    const lines = renderTasksWidget({ items, theme, width: 80, now });
-    expect(lines[0]).toContain("2 running");
-    expect(lines[0]).toContain("0/3 done");
+    const lines = renderTasksWidget({ items, theme, width: 80 });
+    expect(lines[0]).toContain("3 tasks");
+    expect(lines[0]).toContain("0 done");
+    expect(lines[0]).toContain("2 in progress");
+    expect(lines[0]).toContain("1 open");
     expect(lines[0]).not.toContain("Doing A");
     expect(lines[0]).not.toContain("Doing B");
     expect(lines).toHaveLength(1 + 3);
@@ -93,7 +94,7 @@ describe("renderTasksWidget", () => {
       { id: "1", subject: "A", description: "A", status: "in_progress", startedAt: 0 },
       { id: "2", subject: "B", description: "B", status: "in_progress", startedAt: 0 },
     ];
-    const lines = renderTasksWidget({ items, theme, width: 80, now: 10_000 });
+    const lines = renderTasksWidget({ items, theme, width: 80 });
     expect(lines).toHaveLength(1 + 2);
     expect(lines[1]).toContain("A");
     expect(lines[2]).toContain("B");

@@ -10,7 +10,7 @@ export type BuildTaskGetToolConfig = ToolCommonConfig;
 export type GetTaskDetails = { task: Task | null };
 
 export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
-  const { name, label, brand, headerPrefix, root, widgetKey } = resolveToolDefaults(config, {
+  const { name, label, brand, root, widgetKey } = resolveToolDefaults(config, {
     name: "task_get",
     label: "Task Get",
   });
@@ -42,7 +42,7 @@ export function buildTaskGetTool(config: BuildTaskGetToolConfig = {}) {
       // Read-only operation, but refresh anyway so the widget stays in sync with disk
       // if the user manually edited a task file between reads. V2 doesn't do this; we keep
       // it for consistency with task_list, which also refreshes on a read.
-      await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, headerPrefix, root });
+      await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, root });
 
       if (!task) {
         return { content: [{ type: "text", text: "Task not found" }], details: { task: null } };
