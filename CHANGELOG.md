@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.3 — 2026-05-01
+
+### Fixed
+
+- All four tools now write to a single shared widget slot. Previously each tool called `ui.setWidget(<toolName>, …)` keyed on its own tool name (`task_create`, `task_update`, `task_list`, `task_get`), producing up to four stacked widgets in the pi UI as the model used different tools across a session. The shared key is derived from the namePrefix (default `task`); custom prefixes (e.g. `plan_create`/`plan_update`/…) collapse to a single `plan` slot.
+
 ## v0.2.2 — 2026-05-01
 
 ### Fixed

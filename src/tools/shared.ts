@@ -20,19 +20,35 @@ export type ResolvedToolDefaults = {
   brand: string;
   headerPrefix: string;
   root: string | undefined;
+  widgetKey: string;
 };
+
+const WIDGET_KEY_SUFFIX_RE = /_(create|update|list|get)$/;
+
+/**
+ * Derive the shared widget key from a tool name. All four tools in a set
+ * share the same widget slot — otherwise pi keeps four distinct widgets
+ * keyed by tool name and stacks them in the UI. The default scheme is
+ * `<namePrefix>_(create|update|list|get)`, so stripping the suffix
+ * yields the prefix and produces a single shared key.
+ */
+function deriveWidgetKey(name: string): string {
+  return name.replace(WIDGET_KEY_SUFFIX_RE, "");
+}
 
 /** Apply defaults shared by all four tool factories. `name`/`label` fall back to per-tool values. */
 export function resolveToolDefaults(
   config: ToolCommonConfig,
   fallback: { name: string; label: string },
 ): ResolvedToolDefaults {
+  const name = config.name ?? fallback.name;
   return {
-    name: config.name ?? fallback.name,
+    name,
     label: config.label ?? fallback.label,
     brand: config.brand ?? "●",
     headerPrefix: config.headerPrefix ?? "Tasks",
     root: config.tasksRoot,
+    widgetKey: deriveWidgetKey(name),
   };
 }
 

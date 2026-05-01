@@ -21,7 +21,7 @@ export type BuildTaskUpdateToolConfig = ToolCommonConfig & {
 export type UpdateTaskToolDetails = UpdateTaskResult;
 
 export function buildTaskUpdateTool(config: BuildTaskUpdateToolConfig = {}) {
-  const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {
+  const { name, label, brand, headerPrefix, root, widgetKey } = resolveToolDefaults(config, {
     name: "task_update",
     label: "Task Update",
   });
@@ -62,7 +62,7 @@ export function buildTaskUpdateTool(config: BuildTaskUpdateToolConfig = {}) {
         };
       }
 
-      const tasks = await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
+      const tasks = await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, headerPrefix, root });
 
       void writeMarker("task-event", { kind: "update", taskId, fields: result.updatedFields });
       (ctx.sessionManager as SessionManager).appendCustomEntry("task-event", result);
