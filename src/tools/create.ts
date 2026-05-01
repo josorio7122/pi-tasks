@@ -19,7 +19,7 @@ export type CreateTaskDetails = {
 };
 
 export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
-  const { name, label, brand, headerPrefix, root } = resolveToolDefaults(config, {
+  const { name, label, brand, headerPrefix, root, widgetKey } = resolveToolDefaults(config, {
     name: "task_create",
     label: "Task Create",
   });
@@ -61,7 +61,7 @@ export function buildTaskCreateTool(config: BuildTaskCreateToolConfig = {}) {
       const taskListId = getTaskListId(ctx);
       const taskId = await createTask(taskListId, sanitized, root);
 
-      await refreshWidget({ ctx, taskListId, toolName: name, brand, headerPrefix, root });
+      await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, headerPrefix, root });
 
       void writeMarker("task-event", { kind: "create", taskId, subject: sanitized.subject });
       (ctx.sessionManager as SessionManager).appendCustomEntry("task-event", {

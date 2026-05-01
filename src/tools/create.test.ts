@@ -52,4 +52,20 @@ describe("task_create tool", () => {
     await tool.execute("tc3", { subject: "x", description: "y" }, new AbortController().signal, undefined, ctx);
     expect(ctx.ui.setWidget as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(1);
   });
+
+  it("sets the widget under the shared 'task' key (not 'task_create') so all four tools share one slot", async () => {
+    const tool = buildTaskCreateTool({ tasksRoot: root });
+    const ctx = makeMockContext();
+    await tool.execute("tc4", { subject: "x", description: "y" }, new AbortController().signal, undefined, ctx);
+    const calls = (ctx.ui.setWidget as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls[0]?.[0]).toBe("task");
+  });
+
+  it("respects custom namePrefix when deriving the shared widget key", async () => {
+    const tool = buildTaskCreateTool({ tasksRoot: root, name: "plan_create" });
+    const ctx = makeMockContext();
+    await tool.execute("tc5", { subject: "x", description: "y" }, new AbortController().signal, undefined, ctx);
+    const calls = (ctx.ui.setWidget as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls[0]?.[0]).toBe("plan");
+  });
 });
