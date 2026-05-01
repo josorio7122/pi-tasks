@@ -77,3 +77,7 @@ export type { RenderTasksWidgetProps } from "./render/widget.js";
 export { renderTasksWidget } from "./render/widget.js";
 export type { Task, TaskStatus } from "./schema.js";
 export { TaskSchema, TaskStatusSchema } from "./schema.js";
+// Storage helpers — exported so library consumers (e.g. pi-superpowers) can
+// replicate the default extension's session_start glue (subagent task-list
+// sharing via PI_TASK_LIST_ID, fork cloning) without reimplementing them.
+export { cloneTaskList, ensureTasksDir, getTaskListId, PI_TASK_LIST_ID_ENV } from "./storage/index.js";

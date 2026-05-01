@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.1 — 2026-05-01
+
+### Added
+
+- Public re-exports of storage helpers (`cloneTaskList`, `ensureTasksDir`, `getTaskListId`, `PI_TASK_LIST_ID_ENV`) from the package entry. Library consumers (e.g. pi-superpowers) can now replicate the default extension's `session_start` glue — subagent task-list sharing via `PI_TASK_LIST_ID` and fork cloning — without reimplementing them.
+
 ## v0.2.0 — 2026-04-25
 
 ### Breaking changes
