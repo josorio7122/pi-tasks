@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.4 — 2026-05-01
+
+### Changed (V2 parity)
+
+- Widget header is now V2-aligned and timer-free: `<brand> <N> tasks (<done> done[, <inProgress> in progress], <open> open)`. Previously the header replaced its title with the in_progress task's `activeForm` and per-task elapsed timer, which mixed Claude Code's separate Spinner concern into the panel. The in_progress row is already highlighted in `accent` color via `styleTaskContent`, so the active task is visible without a header flip. The `activeForm` field is preserved on tasks and in tool-result text for any future spinner consumer.
+
+### Removed (breaking)
+
+- `headerPrefix` config option on `createTasksTools` / `registerTasksTools` and `RenderTasksWidgetProps`. The header format no longer has a configurable prefix slot.
+- `now` field on `RenderTasksWidgetProps`. Header has no timer.
+- `formatElapsed` export. No longer used internally.
+- `src/render/elapsed.ts` and its tests.
+
 ## v0.2.3 — 2026-05-01
 
 ### Fixed

@@ -14,8 +14,6 @@ export type CreateTasksToolsConfig = {
   labelPrefix?: string;
   /** Widget brand glyph. Default "●". */
   brand?: string;
-  /** Widget header label. Default "Tasks". */
-  headerPrefix?: string;
   /** Verification nudge: true=default text, string=override, false=disable. Default true. */
   verificationNudge?: NudgeConfig;
   /** Verifier subagent name embedded in default nudge text. Default "verifier". */
@@ -42,7 +40,6 @@ export function createTasksTools(config: CreateTasksToolsConfig = {}) {
   // when spreading into tool factories (their fields are optional, not optional|undefined).
   const common = pickDefined({
     brand: config.brand,
-    headerPrefix: config.headerPrefix,
     tasksRoot: config.tasksRoot,
   });
 
@@ -72,7 +69,6 @@ export function registerTasksTools(pi: ExtensionAPI, config: CreateTasksToolsCon
   pi.registerTool(tools.get);
 }
 
-export { formatElapsed } from "./render/elapsed.js";
 export type { RenderTasksWidgetProps } from "./render/widget.js";
 export { renderTasksWidget } from "./render/widget.js";
 export type { Task, TaskStatus } from "./schema.js";

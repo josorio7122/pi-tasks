@@ -42,13 +42,13 @@ async function main(): Promise<void> {
       root,
     );
 
-    await renderFrame("frame 1: three pending tasks", root);
+    await renderFrame("frame 1: three pending tasks (header: '3 tasks (0 done, 3 open)')", root);
 
     await updateTask(TASK_LIST_ID, "2", { status: "in_progress" }, root);
-    await renderFrame("frame 2: task 2 in_progress (header should show activeForm)", root);
+    await renderFrame("frame 2: task 2 in_progress (header gains '1 in progress'; row 2 styled accent)", root);
 
     await updateTask(TASK_LIST_ID, "1", { status: "completed" }, root);
-    await renderFrame("frame 3: task 1 completed, task 2 still in_progress", root);
+    await renderFrame("frame 3: task 1 completed, task 2 still in_progress (header stays aggregate)", root);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

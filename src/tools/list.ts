@@ -9,7 +9,7 @@ export type BuildTaskListToolConfig = ToolCommonConfig;
 export type ListTasksDetails = { tasks: readonly Task[] };
 
 export function buildTaskListTool(config: BuildTaskListToolConfig = {}) {
-  const { name, label, brand, headerPrefix, root, widgetKey } = resolveToolDefaults(config, {
+  const { name, label, brand, root, widgetKey } = resolveToolDefaults(config, {
     name: "task_list",
     label: "Task List",
   });
@@ -29,7 +29,7 @@ export function buildTaskListTool(config: BuildTaskListToolConfig = {}) {
       ctx: ExtensionContext,
     ): Promise<AgentToolResult<ListTasksDetails>> {
       const taskListId = getTaskListId(ctx);
-      const tasks = await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, headerPrefix, root });
+      const tasks = await refreshWidget({ ctx, taskListId, toolName: widgetKey, brand, root });
 
       const text =
         tasks.length === 0 ? "No tasks found" : tasks.map((t) => `#${t.id} [${t.status}] ${t.subject}`).join("\n");

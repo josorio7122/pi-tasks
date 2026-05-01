@@ -10,7 +10,6 @@ export type ToolCommonConfig = {
   name?: string;
   label?: string;
   brand?: string;
-  headerPrefix?: string;
   tasksRoot?: string;
 };
 
@@ -18,7 +17,6 @@ export type ResolvedToolDefaults = {
   name: string;
   label: string;
   brand: string;
-  headerPrefix: string;
   root: string | undefined;
   widgetKey: string;
 };
@@ -46,7 +44,6 @@ export function resolveToolDefaults(
     name,
     label: config.label ?? fallback.label,
     brand: config.brand ?? "●",
-    headerPrefix: config.headerPrefix ?? "Tasks",
     root: config.tasksRoot,
     widgetKey: deriveWidgetKey(name),
   };
@@ -57,7 +54,6 @@ export type RefreshWidgetOptions = {
   taskListId: string;
   toolName: string;
   brand: string;
-  headerPrefix: string;
   root: string | undefined;
 };
 
@@ -69,7 +65,6 @@ export async function refreshWidget(opts: RefreshWidgetOptions): Promise<Task[]>
     theme: opts.ctx.ui.theme,
     width: WIDGET_WIDTH,
     brand: opts.brand,
-    headerPrefix: opts.headerPrefix,
   });
   opts.ctx.ui.setWidget(opts.toolName, tasks.length === 0 ? undefined : widget);
   return tasks;
