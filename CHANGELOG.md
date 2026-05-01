@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.2 — 2026-05-01
+
+### Fixed
+
+- Move `@types/proper-lockfile` from devDependencies to dependencies. Since the package entry exports raw `.ts` source (`exports."."` → `./src/api.ts`), TypeScript consumers transitively compile our storage modules and need the type declarations at install time. Without this, downstream `tsc --noEmit` fails with TS7016 on `proper-lockfile`.
+
 ## v0.2.1 — 2026-05-01
 
 ### Added
