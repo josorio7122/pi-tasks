@@ -4,14 +4,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pi-package](https://img.shields.io/badge/pi--package-v0.2.0-36f9f6)](https://github.com/josorio7122/pi-tasks/releases/tag/v0.2.0)
 
-> Four task tools for [pi](https://github.com/badlogic/pi-mono) agents — disk-backed, session-scoped tasks with a live above-editor widget, mirroring Claude Code's V2 task system.
+> Four task tools for [pi](https://github.com/badlogic/pi-coding-agent): disk-backed, session-scoped, with a live above-editor widget for tracking agent progress.
 
 `pi-tasks` ships two things:
 
 1. A **pi extension** that registers four tools — `task_create`, `task_update`, `task_list`, `task_get` (installable via `pi install` or auto-discovery).
 2. A **library** (`registerTasksTools` / `createTasksTools`) for pi packages that want to register the tools themselves with custom branding / naming / description.
 
-The widget above the editor shows live task state; tool output is V2-style plain text (e.g. `Task #1 created successfully: Build login flow`).
+The widget above the editor shows live task state; tool output is compact plain text, one line per task (e.g. `Task #1 created successfully: Build login flow`).
 
 ## Install as a pi-package
 
@@ -69,7 +69,7 @@ The user's active pi `Theme` is consumed automatically — no theme config requi
    ◼  Write integration tests
 ```
 
-**Tool output** (V2-style plain text):
+**Tool output** (compact plain text, one line per task):
 
 ```
 Task #1 created successfully: Build login flow
@@ -108,12 +108,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions, [SECURITY.md](SECURITY.m
 
 ## Migrating from v0.1
 
-v0.2 mirrors Claude Code's V2 task system. The full spec/plan lives under `docs/superpowers/` locally — gitignored and not shipped. Breaking changes:
+v0.2 introduces the four-tool task system (`task_create` / `task_update` / `task_list` / `task_get`). The full spec/plan lives under `docs/superpowers/` locally — gitignored and not shipped. Breaking changes:
 
 - Single `task` tool replaced with 4 tools (`task_create`, `task_update`, `task_list`, `task_get`).
 - Action enum gone — use the appropriate tool.
 - `Task.content` renamed to `Task.subject`; `description` is required on creation.
-- Tool result text changed to V2 wording (`Task #<id> created successfully: ...`).
+- Tool result text changed to compact plain-text format (`Task #<id> created successfully: ...`).
 - Public API: `createTasksTool` → `createTasksTools` / `registerTasksTools`.
 - Disk-backed storage at `~/.pi/agent/tasks/<sessionId>/`.
 
