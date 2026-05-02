@@ -49,6 +49,10 @@ async function main(): Promise<void> {
 
     await updateTask(TASK_LIST_ID, "1", { status: "completed" }, root);
     await renderFrame("frame 3: task 1 completed, task 2 still in_progress (header stays aggregate)", root);
+
+    await updateTask(TASK_LIST_ID, "2", { status: "completed" }, root);
+    await updateTask(TASK_LIST_ID, "3", { status: "completed" }, root);
+    await renderFrame("frame 4: all tasks completed (V2 auto-reset would fire 5s later)", root);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

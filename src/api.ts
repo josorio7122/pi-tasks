@@ -76,4 +76,10 @@ export { TaskSchema, TaskStatusSchema } from "./schema.js";
 // Storage helpers — exported so library consumers (e.g. pi-superpowers) can
 // replicate the default extension's session_start glue (subagent task-list
 // sharing via PI_TASK_LIST_ID, fork cloning) without reimplementing them.
-export { cloneTaskList, ensureTasksDir, getTaskListId, PI_TASK_LIST_ID_ENV } from "./storage/index.js";
+export {
+  cloneTaskList,
+  ensureTasksDir,
+  getTaskListId,
+  PI_TASK_LIST_ID_ENV,
+  resetTaskList,
+} from "./storage/index.js";

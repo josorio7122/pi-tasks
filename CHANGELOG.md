@@ -4,6 +4,14 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## v0.2.5 — 2026-05-01
+
+### Added (V2 parity)
+
+- Auto-reset: when every task in a list is completed, the widget hides and the on-disk task files are deleted after a 5-second delay. Verbatim port of Claude Code V2 (`useTasksV2.ts:113-172`); the timer is cancelled if any new task is created or any task is reopened within the window. The high-water-mark file is bumped on reset so subsequent IDs don't reuse the deleted ones.
+- New `resetTaskList` storage helper exported from the package entry; mirrors V2's `tasks.ts:147-188`.
+- New `task-event` marker `kind: auto-reset` emitted when the auto-reset fires (used by e2e tests to assert behavior without polling the filesystem).
+
 ## v0.2.4 — 2026-05-01
 
 ### Changed (V2 parity)
